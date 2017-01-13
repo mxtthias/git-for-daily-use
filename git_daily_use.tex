@@ -1,0 +1,817 @@
+\documentclass[11pt,xetex]{beamer}
+
+\usetheme[numbering=none]{metropolis}
+
+\usepackage[swedish]{babel}
+
+\usepackage{subcaption}
+\usepackage{gitdags}
+\usepackage{hyperref}
+\usepackage{minted}
+\AtBeginEnvironment{minted}{\fontsize{10}{10}\selectfont}
+\usemintedstyle{trac}
+\usepackage{perpage}
+\MakePerPage{footnote}
+
+\setsansfont{League Spartan}
+
+\definecolor{normalTextColor}{HTML}{303030}
+\definecolor{alertedTextColor}{HTML}{EF746F}
+\definecolor{exampleTextColor}{HTML}{1693A5}
+
+\setbeamercolor{normal text}{fg=normalTextColor, bg=black!2}
+\setbeamercolor{alerted text}{fg=alertedTextColor, bg=black!2}
+\setbeamercolor{example text}{fg=exampleTextColor, bg=black!2}
+
+\title{Git till vardags}
+\date{\today}
+\author{Matthias Nilsson}
+%\institute{}
+
+\begin{document}
+
+\maketitle
+
+
+\section*{Introduktion}
+
+\begin{frame}{Introduktion}
+  \Large
+  Planen för i dag:
+
+  \begin{itemize}
+    \item Commits
+    \item Grenar
+    \item Samarbete och konflikter
+    \item När allt går fel
+    \item Tips \& trix
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Introduktion}
+  \Large
+  Några ord om kommandorad vs. GUI.
+\end{frame}
+
+\begin{frame}{Introduktion}
+  \Large
+  Använd det som funkar bäst för dig.
+\end{frame}
+
+\section*{Commits}
+
+\begin{frame}{Commits}
+  \Large
+  Commits låter oss se vad som ändrats och (förhoppningsvis) varför.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  \url{http://www.commitlogsfromlastnight.com/}
+\end{frame}
+
+\begin{frame}[fragile]{Commits}
+  \Large
+  Ett bra commit-meddelande förklarar \emph{vad} som gjorts och \emph{varför}.
+
+  \begin{minted}{text}
+    En kort (<50 tecken) sammanfattning
+
+    Därefter en längre beskrivande text, om det behövs.
+    Försök hålla radlängden till ~72 tecken.
+
+    Imperativ form ("Add", inte "Added") på
+    sammanfattningen matchar stilen på de meddelanden
+    som Git genererar.
+  \end{minted}
+
+  \normalsize
+  Se
+  \url{http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html}
+  för mer information.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Varje commit som hamnar i \mintinline{text}{master} ska vara komplett.
+
+  \normalsize
+  Detta innebär att alla tester går igenom, att koden går att köra utan
+  varningar, osv.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  En bra commit är en logiskt sammanhängande ändring.
+
+  \normalsize
+  Orelaterade ändringar ska ligga i andra commits.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Gits ''staging area'' gör det här enkelt för oss.
+  \pause
+
+  \mintinline{text}{git add --patch} och \mintinline{text}{git add
+      --interactive} låter oss välja vad vi vill commit:a.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Huge
+  \alert{OBS}
+
+  \Large
+  \mintinline{text}{git commit -m} kan slänga bort information.
+
+  \normalsize
+  T.ex. vid en merge med manuellt fixade konflikter.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Ibland blir det fel.
+  \pause
+
+  \normalsize
+  Stavfel i commit-meddelandet, glömt att lägga till en fil, testerna går inte
+  igenom, osv.
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  \mintinline{text}{git commit --amend} låter oss ändra på senaste commit:en.
+
+  \normalsize
+  (För att ändra på mer finns kommandot \mintinline{text}{git rebase
+      --interactive}, men det är överkurs just nu.)
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Övning 1: Snygga commits
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Historiken i Git är en riktad acyklisk graf, där varje commit är en nod.
+
+  \small
+  (Historiken kan förgrenas, men allt rör sig framåt.)
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  \mintinline{text}{HEAD} är den commit vi står på just nu.
+
+  \small
+  \mintinline{text}{HEAD} ändras t.ex. när vi skapar nya commits eller när vi
+  byter branch.
+\end{frame}
+
+\begin{frame}{Commits}
+  \captionsetup{type=table}
+  \begin{figure}[t!]
+      \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \gitDAG[grow right sep = 2em]{
+            A -- B
+          };
+          \gitbranch
+            [master]
+            {master}
+            {above=of B}
+            {B}
+          \gitHEAD
+            {above=of master}
+            {master}
+        \end{tikzpicture}
+      \end{subfigure}%
+      ~
+      \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \gitDAG[grow right sep = 2em]{
+            A -- B -- C
+          };
+          \gitbranch
+            [master]
+            {master}
+            {above=of C}
+            {C}
+          \gitHEAD
+            {above=of master}
+            {master}
+        \end{tikzpicture}
+      \end{subfigure}
+  \end{figure}
+
+  \center
+  Före och efter \mintinline{text}{git commit}
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Förutom att referera till commits med deras commit hash kan vi även referera
+  till dem relativt till \mintinline{text}{HEAD}.
+
+  \small
+  \mintinline{text}{HEAD~1} är samma sak som att säga ''commit:en som är ett steg innan
+  \mintinline{text}{HEAD}''.
+\end{frame}
+
+\begin{frame}{Commits}
+  \captionsetup{type=table}
+  \begin{figure}[t!]
+      \begin{subfigure}[b]{\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \gitDAG[grow right sep = 2em]{
+            A -- B -- C
+          };
+          \gitbranch
+            [master]
+            {master}
+            {above=of C}
+            {C}
+          \gitHEAD
+            {above=of master}
+            {master}
+          \gitremotebranch
+            [head1]
+            {HEAD\textasciitilde1}
+            {above=of B}
+            {B}
+          \gitremotebranch
+            [head2]
+            {HEAD\textasciitilde2}
+            {above=of A}
+            {A}
+        \end{tikzpicture}
+      \end{subfigure}
+  \end{figure}
+
+  \center Relativa commits
+\end{frame}
+
+\begin{frame}{Commits}
+  \captionsetup{type=table}
+  \begin{figure}[t!]
+      \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \gitDAG[grow right sep = 2em]{
+            A -- B -- C
+          };
+          \gitbranch
+            {master}
+            {above=of C}
+            {C}
+          \gitHEAD
+            {above=of master}
+            {master}
+        \end{tikzpicture}
+      \end{subfigure}%
+      ~
+      \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \begin{tikzpicture}
+          \gitDAG[grow right sep = 2em]{
+            A -- B -- {[nodes=unreachable] C}
+          };
+          \gitbranch
+            {master}
+            {above=of B}
+            {B}
+          \gitHEAD
+            {above=of master}
+            {master}
+        \end{tikzpicture}
+      \end{subfigure}
+  \end{figure}
+
+  \center
+  Före och efter \mintinline{text}{git reset HEAD~1}
+\end{frame}
+
+
+\section*{Grenar}
+
+\begin{frame}{Grenar}
+  \Large
+  Git tillåter (och uppmuntrar) oss att dela upp arbetet i ''grenar''
+  (branches).
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  Varje repo börjar med en \mintinline{text}{master}-gren.
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  Grenar är billiga att skapa och använda.
+
+  De låter oss:
+
+  \normalsize
+  \begin{itemize}
+    \item arbeta på flera orelaterade features parallellt
+    \item skapa en ny gren för att experimentera utan att riskera att ha
+        sönder saker
+    \item hantera releaser
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Grenar}
+  \Large
+  För att skapa en ny gren:
+
+  \begin{minted}{bash}
+    $ git branch my-branch && git checkout my-branch
+  \end{minted}
+
+  Genväg:
+
+  \begin{minted}{bash}
+    $ git checkout -b my-branch
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Grenar}
+  \Large
+  För att publicera den nya grenen:
+
+  \begin{minted}{bash}
+    $ git push -u origin my-branch
+  \end{minted}
+
+  \scriptsize
+  (\mintinline{text}{-u} innebär att Git kopplar ihop din lokala gren med den
+  på \mintinline{text}{origin}.)
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  \mintinline{text}{HEAD} följer med när vi byter branch.
+\end{frame}
+
+\begin{frame}{Grenar}
+  \captionsetup{type=table}
+  \begin{subfigure}[t]{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- C
+      };
+      \gitbranch
+        {master}
+        {above=of B}
+        {B}
+      \gitbranch
+        {my-branch}
+        {above=of C}
+        {C}
+      \gitHEAD
+        {above=of my-branch}
+        {my-branch}
+    \end{tikzpicture}
+  \end{subfigure}%
+  ~
+  \begin{subfigure}[t]{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- C
+      };
+      \gitbranch
+        {master}
+        {above=of B}
+        {B}
+      \gitbranch
+        {my-branch}
+        {above=of C}
+        {C}
+      \gitHEAD
+        {above=of master}
+        {master}
+    \end{tikzpicture}
+  \end{subfigure}
+
+  \center
+  Före och efter \mintinline{text}{git checkout master}
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  För att samla ihop commits från olika grenar använder vi
+  \mintinline{text}{git merge} eller \mintinline{text}{git rebase}.
+\end{frame}
+
+\begin{frame}{Grenar}
+  \captionsetup{type=table}
+  \begin{subfigure}[b]{\textwidth}
+    \centering
+    \begin{tikzpicture}
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- {
+          C,
+          D -- E,
+        }
+      };
+      \gitbranch
+        [master]
+        {master}
+        {above=of C}
+        {C}
+      \gitbranch
+        [my-branch]
+        {my-branch}
+        {below=of E}
+        {E}
+      \gitHEAD
+        {above=of master}
+        {master}
+    \end{tikzpicture}
+  \end{subfigure}
+\end{frame}
+
+\begin{frame}{Grenar}
+  \captionsetup{type=table}
+  \begin{subfigure}[t]{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=0.65, every node/.style={transform shape}]
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- {
+          C,
+          D -- E,
+        } -- F
+      };
+      \gitbranch
+        {master}
+        {above=of F}
+        {F}
+      \gitbranch
+        {my-branch}
+        {below=of E}
+        {E}
+      \gitHEAD
+        {above=of master}
+        {master}
+    \end{tikzpicture}
+    \mintinline{text}{git merge --no-ff my-branch}
+  \end{subfigure}%
+  ~
+  \begin{subfigure}[t]{0.5\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=0.65, every node/.style={transform shape}]
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- {
+          D' -- E' -- C,
+          D -- E,
+        }
+      };
+      \gitbranch
+        {master}
+        {above=of C}
+        {C}
+      \gitbranch
+        {my-branch}
+        {below=of E}
+        {E}
+      \gitHEAD
+        {above=of master}
+        {master}
+    \end{tikzpicture}
+    \mintinline{text}{git rebase my-branch}
+  \end{subfigure}
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  \begin{exampleblock}{\Huge Tips}
+    \begin{itemize}
+      \item Använd \mintinline{text}{git merge --no-ff} för att spåra vilken gren
+          ändringarna kommer ifrån.
+      \item Använd \mintinline{text}{git rebase} när det är irrelevant.
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Grenar}
+  \Large
+  Övning 2: Merge och rebase
+\end{frame}
+
+\section*{Samarbete och konflikter}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  Att arbeta tillsammans med andra i samma gren kan vara problematiskt.
+\end{frame}
+
+\begin{frame}[fragile]{Samarbete och konflikter}
+  \begin{minted}[fontsize=\tiny]{text}
+    $ git push
+    To git.kb.se:matnil/test.git
+     ! [rejected]        master -> master (fetch first)
+     error: failed to push some refs to 'git@git.kb.se:matnil/test.git'
+     hint: Updates were rejected because the remote contains work that you do
+     hint: not have locally. This is usually caused by another repository
+     pushing
+     hint: to the same ref. You may want to first integrate the remote changes
+     hint: (e.g., 'git pull ...') before pushing again.
+     hint: See the 'Note about fast-forwards' in 'git push --help' for
+     details.
+  \end{minted}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \captionsetup{type=table}
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=1, every node/.style={transform shape}]
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- {
+          E,
+          C -- D,
+        }
+      };
+      \gitremotebranch
+        [origmaster]
+        {origin/master}
+        {above=of E}
+        {E}
+      \gitbranch
+        {master}
+        {below=of D}
+        {D}
+      \gitHEAD
+        {below=of master}
+        {master}
+    \end{tikzpicture}
+  \end{subfigure}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \captionsetup{type=table}
+  \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{tikzpicture}[scale=1, every node/.style={transform shape}]
+      \gitDAG[grow right sep = 2em]{
+        A -- B -- E -- C -- D
+      };
+      \gitremotebranch
+        [origmaster]
+        {origin/master}
+        {above=of E}
+        {E}
+      \gitbranch
+        {master}
+        {above=of D}
+        {D}
+      \gitHEAD
+        {above=of master}
+        {master}
+    \end{tikzpicture}
+  \end{subfigure}
+
+  \center
+  Efter \mintinline{text}{git pull --rebase}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \begin{alertblock}{\huge Rant}
+    \large
+    \mintinline{text}{git pull} ska aldrig resultera i en merge-commit.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  Om flera personer arbetar i samma repo är konflikter inte ovanligt.
+
+  Konflikter (i koden) är inget att vara rädd för.
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  Övning 3: Konflikthantering
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  För snåriga konflikter kan externa verktyg underlätta.
+
+  Ett sådant är \mintinline{text}{meld}\footnote{\url{http://meldmerge.org/}}.
+\end{frame}
+
+\begin{frame}[fragile]{Samarbete och konflikter}
+  \Large
+  Använd ett externt verktyg för att lösa en konflikt:
+
+  \begin{minted}{bash}
+    $ git config --global merge.tool meld
+    $ git config --global mergetool.prompt false
+    $ git mergetool # starta verktyget
+  \end{minted}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  Git kan spara lösningar på manuellt fixade konflikter och automatiskt
+  applicera
+  dem\footnote{\url{https://git-scm.com/blog/2010/03/08/rerere.html}}.
+
+  \mintinline{text}{git config --global rerere.enabled true}
+\end{frame}
+
+
+\section*{När allt går fel}
+
+\begin{frame}{När allt går fel}
+  \Large
+  \mintinline{text}{git {merge|rebase} --abort}
+
+  \normalsize
+  Avbryt och återgå till där du var innan du påbörjade sammanfogningen.
+\end{frame}
+
+\begin{frame}{När allt går fel}
+  \Large
+  \mintinline{text}{git reset --hard origin/master}
+
+  \normalsize
+  Släng bort det du har lokalt och börja om med det som ligger remote.
+  \pause
+
+  \vspace{1em}
+  \alert{OBS}
+
+  \normalsize
+  Var noga med att bara köra det här kommandot när det är okej att slänga bort
+  lokala ändringar.
+\end{frame}
+
+\begin{frame}{När allt går fel}
+  \Large
+  \mintinline{text}{git reflog show}
+
+  \normalsize
+  Git loggar varje gång \mintinline{text}{HEAD} ändras och
+  \mintinline{text}{git reflog show} visar loggen. Vi kan därefter använda
+  \mintinline{text}{git checkout} för att gå till ett tidigare steg.
+
+  \scriptsize
+  (\mintinline{text}{git checkout} ändrar också \mintinline{text}{HEAD}, så
+  Git loggar det också.)
+\end{frame}
+
+
+\section*{Tips \& trix}
+
+\begin{frame}[fragile]{Tips \& trix}
+  \Large
+  Håll din gren uppdaterad
+
+  \normalsize
+  Se till att din gren innehåller senaste \mintinline{text}{master} innan du
+  genomför en merge (eller skickar en pull request):
+
+  \begin{minted}{bash}
+    $ git checkout -b my-branch
+    # jobbajobbajobba
+    $ git checkout master && git pull
+    $ git checkout my-branch
+    $ git rebase master
+    # fixa eventuella konflikter
+    $ git checkout master && git merge --no-ff my-branch
+  \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Tips \& trix}
+  \Large
+  Mina top 10 Git-kommandon:
+
+  \begin{minted}{bash}
+    $ history | awk '{ print $2, $3 }' | grep "^git" | \
+        sort | uniq -c | sort -nr | head -n 10
+    855 git status
+    514 git diff
+    344 git log
+    214 git add
+    200 git checkout
+    179 git push
+    176 git commit
+    124 git fetch
+     94 git stash
+     79 git pull
+  \end{minted}
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git diff --staged}
+
+  \normalsize
+  För att kolla att du verkligen commit:ar det du tror.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git tag --annotate}
+
+  \normalsize
+  För att markera en release.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git fetch --all}
+
+  \normalsize
+  För att hämta hem nya taggar, nya grenar, osv.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git rebase --interactive}
+
+  \normalsize
+  För att skriva om historiken.
+
+  \vspace{1em}
+  \alert{\Large OBS}
+
+  Det är viktigt att veta när det är okej att skriva om historik och när du
+  definitivt inte ska göra det. Det samma gäller \mintinline{text}{git push
+      --force}.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git cherry-pick}
+
+  \normalsize
+  För att plocka in individuella commits i din gren.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git stash}
+
+  \normalsize
+  För att (tillfälligt) spara undan ändringar du inte vill commit:a.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git blame}
+
+  \normalsize
+  För att ta reda på när en viss rad skrevs och av vem.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  Bestäm ett arbetsflöde.
+
+  \normalsize
+  Se t.ex. \url{https://www.atlassian.com/git/tutorials/comparing-workflows}.
+\end{frame}
+
+
+\begin{frame}[standout]
+  \Huge
+  Frågor?
+\end{frame}
+
+
+\section*{Resurser}
+
+\begin{frame}{Resurser}
+  \begin{itemize}
+    \item Pro Git \\
+      \url{https://git-scm.com/book/en/v2}
+    \item A Note About Git Commit Messages \\
+      \url{http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html}
+    \item Git for ages 4 and up \\
+      \url{https://www.youtube.com/watch?v=1ffBJ4sVUb4}
+    \item Git GUI Clients \\
+      \url{https://git-scm.com/downloads/guis}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[standout]{}
+  \begin{center}
+    Det här verket är licensierat under Creative Commons
+    Attribution-ShareAlike 4.0 International.
+    \url{https://creativecommons.org/licenses/by-sa/4.0/}
+  \end{center}
+\end{frame}
+
+
+\end{document}
+

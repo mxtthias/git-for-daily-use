@@ -60,6 +60,16 @@
 
 \section*{Commits}
 
+\begin{frame}[fragile]{Commits}
+  \begin{minted}{bash}
+    commit c1b8042153cc7ebc459bbf9cad9d61bdc318fb64
+    Author: Matthias Nilsson <matthias.nilsson@kb.se>
+    Date:   Thu Jan 26 11:18:08 2017 +0100
+
+        Initial commit
+  \end{minted}
+\end{frame}
+
 \begin{frame}{Commits}
   \Large
   Commits låter oss se vad som ändrats och (förhoppningsvis) varför.
@@ -105,7 +115,8 @@
   En bra commit är en logiskt sammanhängande ändring.
 
   \normalsize
-  Orelaterade ändringar ska ligga i andra commits.
+  Orelaterade ändringar ska ligga i andra commits. Håll uppstädning separat
+  från logiska ändringar.
 \end{frame}
 
 \begin{frame}{Commits}
@@ -158,6 +169,19 @@
 
   \small
   (Historiken kan förgrenas, men allt rör sig framåt.)
+\end{frame}
+
+\begin{frame}{Commits}
+  \Large
+  Vi kan använda \mintinline{text}{git log} för att titta på grafen:
+
+  \mintinline{text}{git log --all --decorate --oneline --graph}
+
+  \vspace{1em}
+
+  \normalsize
+  (\mintinline{text}{tig}\footnote{\url{https://github.com/jonas/tig}} är värt
+  att titta på för den som gillar textbaserade verktyg.)
 \end{frame}
 
 \begin{frame}{Commits}
@@ -528,6 +552,31 @@
 \end{frame}
 
 \begin{frame}{Samarbete och konflikter}
+  \Large
+  \mintinline{text}{git fetch} uppdaterar det lokala repots bild av
+  \mintinline{text}{origin}.
+\end{frame}
+
+\begin{frame}[fragile]{Samarbete och konflikter}
+  \begin{minted}{bash}
+  $ git fetch
+  Fetching origin
+  remote: Counting objects: 3, done.
+  remote: Total 3 (delta 0), reused 0 (delta 0)
+  Unpacking objects: 100% (3/3), done.
+  From git.kb.se:matnil/test
+     efe053d..e37aaf7  master     -> origin/master
+
+  $ git status
+  On branch master
+  Your branch and 'origin/master' have diverged,
+  and have 2 and 1 different commits each, respectively.
+    (use "git pull" to merge the remote branch into yours)
+    nothing to commit, working tree clean
+  \end{minted}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
   \captionsetup{type=table}
   \begin{subfigure}[t]{\textwidth}
     \centering
@@ -552,6 +601,21 @@
         {master}
     \end{tikzpicture}
   \end{subfigure}
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  \mintinline{text}{git pull} är en genväg för \mintinline{text}{git fetch &&
+      git merge}.
+
+  \normalsize
+  Ibland är det precis vad vi vill, men andra gånger (som i det här fallet)
+  kommer det skapa en onödig merge-commit.
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
+  \mintinline{text}{git pull --rebase} låter oss undvika det.
 \end{frame}
 
 \begin{frame}{Samarbete och konflikter}
@@ -586,6 +650,8 @@
     \large
     \mintinline{text}{git pull} ska aldrig resultera i en merge-commit.
   \end{alertblock}
+
+  Det tillför inget till historiken.
 \end{frame}
 
 \begin{frame}{Samarbete och konflikter}
@@ -602,33 +668,27 @@
 
 \begin{frame}{Samarbete och konflikter}
   \Large
+  Kommunikation underlättar vårt arbete.
+\end{frame}
+
+\begin{frame}{Samarbete och konflikter}
+  \Large
   För snåriga konflikter kan externa verktyg underlätta.
 
   Ett sådant är \mintinline{text}{meld}\footnote{\url{http://meldmerge.org/}}.
 \end{frame}
 
-\begin{frame}[fragile]{Samarbete och konflikter}
-  \Large
-  Använd ett externt verktyg för att lösa en konflikt:
-
-  \begin{minted}{bash}
-    $ git config --global merge.tool meld
-    $ git config --global mergetool.prompt false
-    $ git mergetool # starta verktyget
-  \end{minted}
-\end{frame}
-
-\begin{frame}{Samarbete och konflikter}
-  \Large
-  Git kan spara lösningar på manuellt fixade konflikter och automatiskt
-  applicera
-  dem\footnote{\url{https://git-scm.com/blog/2010/03/08/rerere.html}}.
-
-  \mintinline{text}{git config --global rerere.enabled true}
-\end{frame}
-
 
 \section*{När allt går fel}
+
+\begin{frame}{När allt går fel}
+  \Large
+  Git anstränger sig för att skydda historiken.
+
+  \normalsize
+  Det innebär att vi (oftast) behöver anstränga oss för att slänga bort
+  information. (T.ex. genom att använda \mintinline{text}{--force}.)
+\end{frame}
 
 \begin{frame}{När allt går fel}
   \Large
@@ -656,11 +716,11 @@
 
 \begin{frame}{När allt går fel}
   \Large
-  \mintinline{text}{git reflog show}
+  \mintinline{text}{git reflog}
 
   \normalsize
   Git loggar varje gång \mintinline{text}{HEAD} ändras och
-  \mintinline{text}{git reflog show} visar loggen. Vi kan därefter använda
+  \mintinline{text}{git reflog} visar loggen. Vi kan därefter använda
   \mintinline{text}{git checkout} för att gå till ett tidigare steg.
 
   \scriptsize
@@ -747,6 +807,15 @@
   Det är viktigt att veta när det är okej att skriva om historik och när du
   definitivt inte ska göra det. Det samma gäller \mintinline{text}{git push
       --force}.
+\end{frame}
+
+\begin{frame}{Tips \& trix}
+  \Large
+  \mintinline{text}{git config --global rerere.enabled true}
+
+  Spara lösningar på manuellt fixade konflikter och applicera dem
+  automatiskt\footnote{\url{https://git-scm.com/blog/2010/03/08/rerere.html}}.
+
 \end{frame}
 
 \begin{frame}{Tips \& trix}
